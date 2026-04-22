@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environments
+.venv/
+venv/
+
+# Home Assistant / editor / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Local test and build artifacts
+*.log
+*.tmp
