@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from homeassistant.components.number import NumberDeviceClass, NumberEntity, NumberMode
+from homeassistant.components.number import (
+    NumberDeviceClass,
+    NumberEntity,
+    NumberEntityDescription,
+    NumberMode,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfElectricCurrent
 from homeassistant.core import HomeAssistant
@@ -19,12 +24,8 @@ from .entity import FelicityInverterEntity
 
 
 @dataclass(frozen=True)
-class FelicityNumberDescription:
+class FelicityNumberDescription(NumberEntityDescription):
     field_name: str
-    name: str
-    min_value: float
-    max_value: float
-    step: float
     device_class: NumberDeviceClass | None = None
     entity_category: EntityCategory | None = None
     native_unit_of_measurement: str | None = None
@@ -33,11 +34,12 @@ class FelicityNumberDescription:
 
 NUMBER_DESCRIPTIONS = (
     FelicityNumberDescription(
+        key="max_ac_charge_current",
         field_name="max_ac_charge_current",
         name="Max Grid Charge Current",
-        min_value=0,
-        max_value=100,
-        step=1,
+        native_min_value=0,
+        native_max_value=100,
+        native_step=1,
         device_class=NumberDeviceClass.CURRENT,
         entity_category=EntityCategory.CONFIG,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -71,14 +73,6 @@ class FelicityWritableNumber(FelicityInverterEntity, NumberEntity):
         super().__init__(coordinator, entry_id, f"number_{description.field_name}")
         self.entity_description = description
         self._attr_has_entity_name = True
-        self._attr_name = description.name
-        self._attr_native_min_value = description.min_value
-        self._attr_native_max_value = description.max_value
-        self._attr_native_step = description.step
-        self._attr_device_class = description.device_class
-        self._attr_entity_category = description.entity_category
-        self._attr_native_unit_of_measurement = description.native_unit_of_measurement
-        self._attr_mode = description.mode
 
     @property
     def native_value(self) -> float:

@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+    SensorStateClass,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     PERCENTAGE,
@@ -23,7 +28,7 @@ from .register_map import SETTINGS_REGISTERS, STATUS_REGISTERS
 
 
 @dataclass(frozen=True)
-class FelicitySensorDescription:
+class FelicitySensorDescription(SensorEntityDescription):
     block: str
     address: int
     field_name: str
@@ -76,11 +81,14 @@ def _build_descriptions() -> list[FelicitySensorDescription]:
         device_class, state_class, precision = STATUS_SENSOR_META.get(field_name, (None, None, None))
         descriptions.append(
             FelicitySensorDescription(
+                key=f"status_{field_name}",
+                name=_friendly_name(field_name),
                 block="status",
                 address=address,
                 field_name=field_name,
                 unit=unit,
                 note=note,
+                native_unit_of_measurement=UNIT_MAP.get(unit),
                 device_class=device_class,
                 state_class=state_class,
                 suggested_display_precision=precision,
@@ -91,12 +99,15 @@ def _build_descriptions() -> list[FelicitySensorDescription]:
         device_class, state_class, precision = SETTINGS_SENSOR_META.get(field_name, (None, None, None))
         descriptions.append(
             FelicitySensorDescription(
+                key=f"settings_{field_name}",
+                name=_friendly_name(field_name),
                 block="settings",
                 address=address,
                 field_name=field_name,
                 unit=unit,
                 note=note,
                 entity_category=EntityCategory.CONFIG,
+                native_unit_of_measurement=UNIT_MAP.get(unit),
                 device_class=device_class,
                 state_class=state_class,
                 suggested_display_precision=precision,
@@ -135,12 +146,6 @@ class FelicityRegisterSensor(FelicityInverterEntity, SensorEntity):
         super().__init__(coordinator, entry_id, f"{description.block}_{description.field_name}")
         self.entity_description = description
         self._attr_has_entity_name = True
-        self._attr_name = _friendly_name(description.field_name)
-        self._attr_native_unit_of_measurement = UNIT_MAP.get(description.unit)
-        self._attr_device_class = description.device_class
-        self._attr_state_class = description.state_class
-        self._attr_entity_category = description.entity_category
-        self._attr_suggested_display_precision = description.suggested_display_precision
 
     @property
     def native_value(self):
