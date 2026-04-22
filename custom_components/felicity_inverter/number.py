@@ -4,12 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from homeassistant.components.number import (
-    NumberDeviceClass,
-    NumberEntity,
-    NumberEntityDescription,
-    NumberMode,
-)
+from homeassistant.components.number import NumberDeviceClass, NumberEntity, NumberMode
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfElectricCurrent
 from homeassistant.core import HomeAssistant
@@ -23,14 +18,21 @@ from .coordinator import FelicityInverterDataCoordinator
 from .entity import FelicityInverterEntity
 
 
-@dataclass(frozen=True, kw_only=True)
-class FelicityNumberDescription(NumberEntityDescription):
+@dataclass(frozen=True)
+class FelicityNumberSpec:
     field_name: str
+    name: str
+    native_min_value: float
+    native_max_value: float
+    native_step: float
+    device_class: NumberDeviceClass | None = None
+    entity_category: EntityCategory | None = None
+    native_unit_of_measurement: str | None = None
+    mode: NumberMode = NumberMode.BOX
 
 
-NUMBER_DESCRIPTIONS = (
-    FelicityNumberDescription(
-        key="max_ac_charge_current",
+NUMBER_SPECS = (
+    FelicityNumberSpec(
         field_name="max_ac_charge_current",
         name="Max Grid Charge Current",
         native_min_value=0,
@@ -50,25 +52,29 @@ async def async_setup_entry(
 ) -> None:
     """Set up writable number entities for the inverter."""
     coordinator: FelicityInverterDataCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities(
-        FelicityWritableNumber(coordinator, entry.entry_id, description) for description in NUMBER_DESCRIPTIONS
-    )
+    async_add_entities(FelicityWritableNumber(coordinator, entry.entry_id, spec) for spec in NUMBER_SPECS)
 
 
 class FelicityWritableNumber(FelicityInverterEntity, NumberEntity):
     """Expose a writable inverter setting as a number entity."""
 
-    entity_description: FelicityNumberDescription
-
     def __init__(
         self,
         coordinator: FelicityInverterDataCoordinator,
         entry_id: str,
-        description: FelicityNumberDescription,
+        spec: FelicityNumberSpec,
     ) -> None:
-        super().__init__(coordinator, entry_id, f"number_{description.field_name}")
-        self.entity_description = description
+        super().__init__(coordinator, entry_id, f"number_{spec.field_name}")
+        self._spec = spec
         self._attr_has_entity_name = True
+        self._attr_name = spec.name
+        self._attr_native_min_value = spec.native_min_value
+        self._attr_native_max_value = spec.native_max_value
+        self._attr_native_step = spec.native_step
+        self._attr_device_class = spec.device_class
+        self._attr_entity_category = spec.entity_category
+        self._attr_native_unit_of_measurement = spec.native_unit_of_measurement
+        self._attr_mode = spec.mode
 
     @property
     def native_value(self) -> float:
@@ -96,4 +102,4 @@ class FelicityWritableNumber(FelicityInverterEntity, NumberEntity):
 
     @property
     def _register_data(self) -> dict:
-        return self.coordinator.data["settings"]["registers_by_name"][self.entity_description.field_name]
+        return self.coordinator.data["settings"]["registers_by_name"][self._spec.field_name]

@@ -4,12 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from homeassistant.components.sensor import (
-    SensorDeviceClass,
-    SensorEntity,
-    SensorEntityDescription,
-    SensorStateClass,
-)
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     PERCENTAGE,
@@ -27,13 +22,17 @@ from .entity import FelicityInverterEntity
 from .register_map import SETTINGS_REGISTERS, STATUS_REGISTERS
 
 
-@dataclass(frozen=True, kw_only=True)
-class FelicitySensorDescription(SensorEntityDescription):
+@dataclass(frozen=True)
+class FelicitySensorSpec:
     block: str
     address: int
     field_name: str
     unit: str
     note: str
+    entity_category: EntityCategory | None = None
+    device_class: SensorDeviceClass | None = None
+    state_class: SensorStateClass | None = None
+    suggested_display_precision: int | None = None
 
 
 STATUS_SENSOR_META = {
@@ -70,21 +69,18 @@ def _friendly_name(field_name: str) -> str:
     return field_name.replace("_", " ").replace("Pv", "PV").title().replace("Pv", "PV")
 
 
-def _build_descriptions() -> list[FelicitySensorDescription]:
-    descriptions: list[FelicitySensorDescription] = []
+def _build_specs() -> list[FelicitySensorSpec]:
+    specs: list[FelicitySensorSpec] = []
 
     for address, (field_name, _, unit, note) in sorted(STATUS_REGISTERS.items()):
         device_class, state_class, precision = STATUS_SENSOR_META.get(field_name, (None, None, None))
-        descriptions.append(
-            FelicitySensorDescription(
-                key=f"status_{field_name}",
-                name=_friendly_name(field_name),
+        specs.append(
+            FelicitySensorSpec(
                 block="status",
                 address=address,
                 field_name=field_name,
                 unit=unit,
                 note=note,
-                native_unit_of_measurement=UNIT_MAP.get(unit),
                 device_class=device_class,
                 state_class=state_class,
                 suggested_display_precision=precision,
@@ -93,27 +89,24 @@ def _build_descriptions() -> list[FelicitySensorDescription]:
 
     for address, (field_name, _, unit, note) in sorted(SETTINGS_REGISTERS.items()):
         device_class, state_class, precision = SETTINGS_SENSOR_META.get(field_name, (None, None, None))
-        descriptions.append(
-            FelicitySensorDescription(
-                key=f"settings_{field_name}",
-                name=_friendly_name(field_name),
+        specs.append(
+            FelicitySensorSpec(
                 block="settings",
                 address=address,
                 field_name=field_name,
                 unit=unit,
                 note=note,
                 entity_category=EntityCategory.CONFIG,
-                native_unit_of_measurement=UNIT_MAP.get(unit),
                 device_class=device_class,
                 state_class=state_class,
                 suggested_display_precision=precision,
             )
         )
 
-    return descriptions
+    return specs
 
 
-SENSOR_DESCRIPTIONS = _build_descriptions()
+SENSOR_SPECS = _build_specs()
 
 
 async def async_setup_entry(
@@ -123,25 +116,27 @@ async def async_setup_entry(
 ) -> None:
     """Set up Felicity inverter sensors."""
     coordinator: FelicityInverterDataCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities(
-        FelicityRegisterSensor(coordinator, entry.entry_id, description) for description in SENSOR_DESCRIPTIONS
-    )
+    async_add_entities(FelicityRegisterSensor(coordinator, entry.entry_id, spec) for spec in SENSOR_SPECS)
 
 
 class FelicityRegisterSensor(FelicityInverterEntity, SensorEntity):
     """Expose a mapped register as a Home Assistant sensor."""
 
-    entity_description: FelicitySensorDescription
-
     def __init__(
         self,
         coordinator: FelicityInverterDataCoordinator,
         entry_id: str,
-        description: FelicitySensorDescription,
+        spec: FelicitySensorSpec,
     ) -> None:
-        super().__init__(coordinator, entry_id, f"{description.block}_{description.field_name}")
-        self.entity_description = description
+        super().__init__(coordinator, entry_id, f"{spec.block}_{spec.field_name}")
+        self._spec = spec
         self._attr_has_entity_name = True
+        self._attr_name = _friendly_name(spec.field_name)
+        self._attr_native_unit_of_measurement = UNIT_MAP.get(spec.unit)
+        self._attr_device_class = spec.device_class
+        self._attr_state_class = spec.state_class
+        self._attr_entity_category = spec.entity_category
+        self._attr_suggested_display_precision = spec.suggested_display_precision
 
     @property
     def native_value(self):
@@ -162,4 +157,4 @@ class FelicityRegisterSensor(FelicityInverterEntity, SensorEntity):
 
     @property
     def _register_data(self) -> dict:
-        return self.coordinator.data[self.entity_description.block]["registers_by_name"][self.entity_description.field_name]
+        return self.coordinator.data[self._spec.block]["registers_by_name"][self._spec.field_name]
