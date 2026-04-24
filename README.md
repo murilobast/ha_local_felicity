@@ -1,6 +1,6 @@
 # Local Felicity for Home Assistant
 
-[![Open your Home Assistant instance and open this repository inside HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=murilobast&repository=ha_felicity_inverter&category=integration)
+[![Open your Home Assistant instance and open this repository inside HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=murilobast&repository=ha_local_felicity&category=integration)
 
 Local Home Assistant integration for Felicity Solar devices.
 
@@ -92,7 +92,7 @@ The integration exposes the actual inverter `working_mode` separately so you can
 4. Add this repository URL:
 
 ```text
-https://github.com/murilobast/ha_felicity_inverter
+https://github.com/murilobast/ha_local_felicity
 ```
 
 5. Select category `Integration`.
@@ -151,5 +151,5 @@ This project was informed by public reverse-engineering work and protocol refere
 
 ## Support
 
-- Documentation: https://github.com/murilobast/ha_felicity_inverter
-- Issues: https://github.com/murilobast/ha_felicity_inverter/issues
+- Documentation: https://github.com/murilobast/ha_local_felicity
+- Issues: https://github.com/murilobast/ha_local_felicity/issues

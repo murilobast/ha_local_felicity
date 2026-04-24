@@ -3,11 +3,11 @@
   "name": "Local Felicity",
   "version": "0.3.2",
   "config_flow": true,
-  "documentation": "https://github.com/murilobast/ha_felicity_inverter",
+  "documentation": "https://github.com/murilobast/ha_local_felicity",
   "integration_type": "device",
   "iot_class": "local_polling",
   "loggers": ["custom_components.felicity_inverter"],
-  "issue_tracker": "https://github.com/murilobast/ha_felicity_inverter/issues",
+  "issue_tracker": "https://github.com/murilobast/ha_local_felicity/issues",
   "codeowners": ["@murilobast"],
   "requirements": []
 }
