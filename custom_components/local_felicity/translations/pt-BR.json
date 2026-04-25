@@ -1,0 +1,51 @@
+{
+  "title": "Local Felicity",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Escolha o dispositivo Local Felicity",
+        "data": {
+          "device_type": "Tipo de dispositivo"
+        }
+      },
+      "inverter": {
+        "title": "Conectar ao inversor Local Felicity",
+        "description": "Selecione o dispositivo serial local exposto ao Home Assistant. Dispositivos detectados que correspondem a `{device_glob}`: {device_count}.",
+        "data": {
+          "name": "Nome",
+          "device": "Dispositivo serial",
+          "scan_interval": "Intervalo de leitura (segundos)"
+        }
+      },
+      "battery": {
+        "title": "Conectar à bateria Local Felicity",
+        "description": "Informe o host Wi-Fi local do monitor da bateria.",
+        "data": {
+          "name": "Nome",
+          "wifi_battery_host": "Host Wi-Fi da bateria",
+          "wifi_battery_port": "Porta Wi-Fi da bateria",
+          "scan_interval": "Intervalo de leitura (segundos)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Não foi possível conectar ao dispositivo Felicity selecionado",
+      "unknown": "Erro inesperado"
+    },
+    "abort": {
+      "already_configured": "Este dispositivo já está configurado"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opções do dispositivo Local Felicity",
+        "data": {
+          "scan_interval": "Intervalo de leitura (segundos)",
+          "wifi_battery_host": "Host Wi-Fi da bateria",
+          "wifi_battery_port": "Porta Wi-Fi da bateria"
+        }
+      }
+    }
+  }
+}
