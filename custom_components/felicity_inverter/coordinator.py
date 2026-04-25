@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from copy import deepcopy
 from datetime import timedelta
 from typing import Any
 
@@ -11,7 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .client import FelicityInverterClient, FelicityInverterError
-from .const import DEFAULT_SCAN_INTERVAL, DOMAIN
+from .const import DEFAULT_SCAN_INTERVAL, DEFAULT_WIFI_BATTERY_STALE_POLLS, DOMAIN
 from .wifi_battery import FelicityWifiBatteryClient
 
 LOGGER = logging.getLogger(__name__)
@@ -41,6 +42,9 @@ class FelicityInverterDataCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.has_wifi_battery = wifi_battery_client is not None
         self.wifi_battery_host = wifi_battery_client.host if wifi_battery_client is not None else None
         self.wifi_battery_port = wifi_battery_client.port if wifi_battery_client is not None else None
+        self._wifi_battery_stale_limit = DEFAULT_WIFI_BATTERY_STALE_POLLS
+        self._wifi_battery_failed_polls = 0
+        self._last_good_wifi_battery_data: dict[str, Any] | None = None
         self._lock = asyncio.Lock()
 
     async def _async_update_data(self) -> dict[str, Any]:
@@ -82,7 +86,7 @@ class FelicityInverterDataCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return data
 
         if self.wifi_battery_client is not None:
-            battery = await self.hass.async_add_executor_job(self.wifi_battery_client.read_all)
+            battery = await self._async_read_wifi_battery_data()
             return {
                 "device_type": "battery",
                 "connection": battery["connection"],
@@ -100,8 +104,57 @@ class FelicityInverterDataCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return data
 
         try:
-            data["wifi_battery"] = await self.hass.async_add_executor_job(self.wifi_battery_client.read_all)
+            data["wifi_battery"] = await self._async_read_wifi_battery_data()
         except FelicityInverterError as err:
             LOGGER.warning("Felicity WiFi battery update failed: %s", err)
             data["wifi_battery"] = self.data.get("wifi_battery") if self.data else None
         return data
+
+    async def _async_read_wifi_battery_data(self) -> dict[str, Any]:
+        if self.wifi_battery_client is None:
+            raise FelicityInverterError("No configured WiFi battery backend")
+
+        try:
+            battery = await self.hass.async_add_executor_job(self.wifi_battery_client.read_all)
+        except FelicityInverterError as err:
+            cached = self._use_cached_wifi_battery_data()
+            if cached is not None:
+                LOGGER.warning(
+                    "Felicity WiFi battery update failed, reusing cached data (%s/%s): %s",
+                    self._wifi_battery_failed_polls,
+                    self._wifi_battery_stale_limit,
+                    err,
+                )
+                return cached
+            raise
+
+        self._wifi_battery_failed_polls = 0
+        self._last_good_wifi_battery_data = deepcopy(battery)
+        return self._mark_wifi_battery_fresh(battery)
+
+    def _use_cached_wifi_battery_data(self) -> dict[str, Any] | None:
+        if self._last_good_wifi_battery_data is None:
+            return None
+
+        self._wifi_battery_failed_polls += 1
+        if self._wifi_battery_failed_polls > self._wifi_battery_stale_limit:
+            return None
+
+        cached = deepcopy(self._last_good_wifi_battery_data)
+        return self._mark_wifi_battery_stale(cached)
+
+    def _mark_wifi_battery_fresh(self, battery: dict[str, Any]) -> dict[str, Any]:
+        battery.setdefault("connection", {})
+        battery["stale"] = False
+        battery["stale_polls"] = 0
+        battery["connection"]["stale"] = False
+        battery["connection"]["stale_polls"] = 0
+        return battery
+
+    def _mark_wifi_battery_stale(self, battery: dict[str, Any]) -> dict[str, Any]:
+        battery.setdefault("connection", {})
+        battery["stale"] = True
+        battery["stale_polls"] = self._wifi_battery_failed_polls
+        battery["connection"]["stale"] = True
+        battery["connection"]["stale_polls"] = self._wifi_battery_failed_polls
+        return battery

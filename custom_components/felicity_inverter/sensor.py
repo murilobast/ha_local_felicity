@@ -330,6 +330,8 @@ class FelicityWifiBatterySensor(FelicityInverterEntity, SensorEntity):
             "device_sn": connection.get("device_sn"),
             "battery_type": connection.get("type"),
             "battery_subtype": connection.get("subtype"),
+            "stale": self._wifi_battery_data.get("stale", False),
+            "stale_polls": self._wifi_battery_data.get("stale_polls", 0),
             "max_cell_index": fields.get("max_cell_index"),
             "min_cell_index": fields.get("min_cell_index"),
         }
