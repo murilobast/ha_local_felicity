@@ -1,4 +1,4 @@
-"""The Felicity inverter integration."""
+"""The Local Felicity integration."""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Felicity inverter from a config entry."""
+    """Set up Local Felicity from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
     device_type = entry.data.get(CONF_DEVICE_TYPE, DEVICE_TYPE_INVERTER)

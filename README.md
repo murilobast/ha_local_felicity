@@ -101,7 +101,7 @@ https://github.com/murilobast/ha_local_felicity
 
 ### Option 2: Manual install
 
-Copy the `custom_components/felicity_inverter` directory into your Home Assistant `custom_components` directory and restart Home Assistant.
+Copy the `custom_components/local_felicity` directory into your Home Assistant `custom_components` directory and restart Home Assistant.
 
 ## Home Assistant Setup
 

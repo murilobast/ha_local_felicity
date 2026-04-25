@@ -1,4 +1,4 @@
-"""Config flow for the Felicity inverter integration."""
+"""Config flow for the Local Felicity integration."""
 
 from __future__ import annotations
 
@@ -65,7 +65,7 @@ async def validate_input(hass, data: dict[str, Any]) -> dict[str, Any]:
 
 
 class FelicityInverterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for Felicity inverter."""
+    """Handle a config flow for Local Felicity."""
 
     VERSION = 2
 
@@ -115,7 +115,7 @@ class FelicityInverterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             except CannotConnect:
                 errors["base"] = "cannot_connect"
             except Exception:  # pragma: no cover - defensive guard for HA runtime
-                LOGGER.exception("Unexpected exception while validating Felicity inverter config")
+                LOGGER.exception("Unexpected exception while validating Local Felicity inverter config")
                 errors["base"] = "unknown"
             else:
                 return self.async_create_entry(title=info["title"], data=user_input)
@@ -194,7 +194,7 @@ class FelicityInverterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class FelicityInverterOptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle options for the Felicity inverter integration."""
+    """Handle options for the Local Felicity integration."""
 
     def __init__(self) -> None:
         """Initialize the options flow."""

@@ -1,4 +1,4 @@
-"""Coordinator for Felicity inverter data polling."""
+"""Coordinator for Local Felicity data polling."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class FelicityInverterDataCoordinator(DataUpdateCoordinator[dict[str, Any]]):
-    """Fetch and cache Felicity inverter data."""
+    """Fetch and cache Local Felicity data."""
 
     def __init__(
         self,

@@ -1,10 +1,10 @@
-"""Constants for the Felicity inverter integration."""
+"""Constants for the Local Felicity integration."""
 
 from __future__ import annotations
 
 from homeassistant.const import Platform
 
-DOMAIN = "felicity_inverter"
+DOMAIN = "local_felicity"
 DEFAULT_NAME = "Local Felicity Inverter"
 DEFAULT_BATTERY_NAME = "Local Felicity Battery"
 DEFAULT_SCAN_INTERVAL = 30

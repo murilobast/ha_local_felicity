@@ -1,4 +1,4 @@
-"""Raw Modbus RTU client for the Felicity inverter serial port."""
+"""Raw Modbus RTU client for the Local Felicity serial inverter."""
 
 from __future__ import annotations
 

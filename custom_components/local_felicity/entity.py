@@ -1,4 +1,4 @@
-"""Shared entity base for the Felicity inverter integration."""
+"""Shared entity base for the Local Felicity integration."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from .coordinator import FelicityInverterDataCoordinator
 
 
 class FelicityInverterEntity(CoordinatorEntity[FelicityInverterDataCoordinator]):
-    """Common entity behavior for Felicity inverter entities."""
+    """Common entity behavior for Local Felicity entities."""
 
     def __init__(self, coordinator: FelicityInverterDataCoordinator, entry_id: str, unique_base: str) -> None:
         super().__init__(coordinator)

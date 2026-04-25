@@ -1,4 +1,4 @@
-"""Register definitions for the Felicity inverter Modbus RTU bridge."""
+"""Register definitions for the Local Felicity Modbus RTU bridge."""
 
 from __future__ import annotations
 

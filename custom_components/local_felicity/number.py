@@ -1,4 +1,4 @@
-"""Number platform for writable Felicity inverter settings."""
+"""Number platform for writable Local Felicity settings."""
 
 from __future__ import annotations
 

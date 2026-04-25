@@ -1,4 +1,4 @@
-"""Sensor platform for the Felicity inverter integration."""
+"""Sensor platform for the Local Felicity integration."""
 
 from __future__ import annotations
 
@@ -239,7 +239,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Felicity inverter sensors."""
+    """Set up Local Felicity sensors."""
     coordinator: FelicityInverterDataCoordinator = hass.data[DOMAIN][entry.entry_id]
     entities: list[SensorEntity] = []
     if coordinator.has_inverter:
