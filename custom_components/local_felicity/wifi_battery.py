@@ -120,6 +120,9 @@ class FelicityWifiBatteryClient:
         if soc is None:
             soc = _first_number(raw.get("BatsocList"), scale=0.01)
 
+        if soc is not None and soc <= 0.0:
+            raise FelicityInverterError(f"Ignored invalid SOC value from battery: {soc}%")
+
         temp_values = _valid_numbers(raw.get("BtemList")) or _valid_numbers(raw.get("BTemp"))
         temperature_min = _round_or_none(_scaled_min(temp_values, scale=0.1), 1)
         temperature_max = _round_or_none(_scaled_max(temp_values, scale=0.1), 1)
